@@ -1,0 +1,149 @@
+# 基金理财顾问系统配置
+
+# 基金池配置
+funds:
+  # 宽基指数
+  broad_based:
+    - code: "000300"
+      name: "沪深300"
+      type: "宽基"
+    - code: "000905"
+      name: "中证500"
+      type: "宽基"
+    - code: "399006"
+      name: "创业板指"
+      type: "宽基"
+    - code: "000688"
+      name: "科创50"
+      type: "宽基"
+    - code: "000016"
+      name: "上证50"
+      type: "宽基"
+    - code: "000852"
+      name: "中证1000"
+      type: "宽基"
+  
+  # 行业指数
+  sector:
+    - code: "399997"
+      name: "中证白酒"
+      type: "行业-消费"
+    - code: "399989"
+      name: "中证医疗"
+      type: "行业-医药"
+    - code: "399808"
+      name: "中证新能源"
+      type: "行业-新能源"
+    - code: "H30184"
+      name: "中证半导体"
+      type: "行业-科技"
+    - code: "399967"
+      name: "中证军工"
+      type: "行业-军工"
+    - code: "399986"
+      name: "中证银行"
+      type: "行业-金融"
+    - code: "399975"
+      name: "证券公司"
+      type: "行业-金融"
+    - code: "931775"
+      name: "中证房地产"
+      type: "行业-地产"
+    - code: "930050"
+      name: "中证人工智能"
+      type: "行业-科技"
+    - code: "H30233"
+      name: "中证传媒"
+      type: "行业-传媒"
+  
+  # 海外指数
+  overseas:
+    - code: "NDX"
+      name: "纳斯达克100"
+      type: "海外"
+    - code: "SPX"
+      name: "标普500"
+      type: "海外"
+    - code: "HSI"
+      name: "恒生指数"
+      type: "海外"
+
+# 分析参数
+analysis:
+  # 历史数据回测年数
+  lookback_years: 5
+  
+  # 估值分位点阈值
+  valuation:
+    extremely_low: 5    # 极度低估 (<5%)
+    low: 20             # 低估 (<20%)
+    normal: 50          # 正常 (<50%)
+    high: 80            # 高估 (>80%)
+  
+  # 技术指标参数
+  technical:
+    rsi_period: 14
+    rsi_oversold: 30
+    rsi_overbought: 70
+    ma_short: 20
+    ma_long: 60
+    bollinger_period: 20
+    bollinger_std: 2
+  
+  # 评分权重
+  weights:
+    valuation: 0.30     # 估值评分权重
+    technical: 0.25     # 技术评分权重
+    fund_flow: 0.20     # 资金流向权重
+    fundamental: 0.15   # 基本面权重
+    sentiment: 0.10     # 情绪评分权重
+
+# 推送配置
+notification:
+  # 邮件配置 (QQ邮箱)
+  email:
+    enabled: true
+    smtp_server: "smtp.qq.com"
+    smtp_port: 587
+    username: "920104693@qq.com"
+    password: "${EMAIL_AUTH_CODE}"
+    to_email: "920104693@qq.com"
+  
+  # 企业微信机器人 (已禁用)
+  wecom:
+    enabled: false
+    webhook_url: ""
+  
+  # 飞书机器人 (已禁用)
+  lark:
+    enabled: false
+    webhook_url: ""
+  
+  # 钉钉机器人 (已禁用)
+  dingtalk:
+    enabled: false
+    webhook_url: ""
+  
+  # Claw/WorkBuddy 微信推送 (已禁用)
+  claw:
+    enabled: false
+    api_url: ""
+    token: ""
+
+# 报告配置
+report:
+  # 推荐买入阈值
+  buy_threshold: 75
+  # 关注列表阈值
+  watch_threshold: 60
+  # 生成HTML报告
+  generate_html: true
+  # 保存历史报告
+  save_history: true
+
+# 定时任务配置
+schedule:
+  # 每日运行时间 (24小时制)
+  run_time: "09:00"
+  # 时区
+  timezone: "Asia/Shanghai"

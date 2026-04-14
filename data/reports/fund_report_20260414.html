@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基金理财日报 - 2026年04月14日</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header .date { opacity: 0.9; font-size: 14px; }
+        .content { padding: 30px; }
+        .section { margin-bottom: 30px; }
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .market-overview {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .market-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .market-item .label { color: #666; font-size: 12px; margin-bottom: 5px; }
+        .market-item .value { font-size: 20px; font-weight: 600; }
+        .market-item .change { font-size: 12px; margin-top: 5px; }
+        .positive { color: #f44336; }
+        .negative { color: #4caf50; }
+        .fund-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+        .fund-card:hover { transform: translateX(5px); }
+        .fund-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .fund-name { font-size: 16px; font-weight: 600; }
+        .fund-code { color: #999; font-size: 12px; margin-left: 8px; }
+        .score-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .score-high { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .score-medium { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .score-low { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .fund-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .detail-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .detail-item .label { font-size: 11px; color: #999; }
+        .detail-item .value { font-size: 13px; font-weight: 600; color: #333; }
+        .recommendation {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .rec-title { font-weight: 600; color: #667eea; margin-bottom: 5px; }
+        .rec-text { font-size: 14px; color: #555; }
+        .reasons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .reason-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .risks {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3e0;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #e65100;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+        .disclaimer {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #f57c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 智能基金理财日报</h1>
+            <div class="date">2026年04月14日</div>
+        </div>
+        
+        <div class="content">
+            <!-- 市场概览 -->
+            <div class="section">
+                <div class="section-title">📊 市场概览</div>
+                <div class="market-overview">
+                    <div class="market-item">
+                        <div class="label">上证指数</div>
+                        <div class="value">3047.31</div>
+                        <div class="change negative">
+                            -0.11%
+                        </div>
+                    </div>
+                    <div class="market-item">
+                        <div class="label">深证成指</div>
+                        <div class="value">9767.65</div>
+                        <div class="change negative">
+                            -0.12%
+                        </div>
+                    </div>
+                    <div class="market-item">
+                        <div class="label">创业板指</div>
+                        <div class="value">1919.77</div>
+                        <div class="change negative">
+                            -0.12%
+                        </div>
+                    </div>
+                    <div class="market-item">
+                        <div class="label">北向资金</div>
+                        <div class="value">nan亿</div>
+                        <div class="change negative">
+                            流出
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 推荐买入 -->
+            <div class="section">
+                <div class="section-title">🎯 推荐买入 (评分≥75)</div>
+                
+                    <div class="empty-state">暂无推荐买入的基金</div>
+                
+            </div>
+            
+            <!-- 关注列表 -->
+            <div class="section">
+                <div class="section-title">👀 关注列表 (评分60-75)</div>
+                
+                    <div class="empty-state">暂无关注基金</div>
+                
+            </div>
+            
+            <!-- 免责声明 -->
+            <div class="disclaimer">
+                <strong>⚠️ 免责声明：</strong>本报告仅供参考，不构成投资建议。投资有风险，入市需谨慎。
+                过往业绩不代表未来表现，请根据自身风险承受能力做出投资决策。
+            </div>
+        </div>
+        
+        <div class="footer">
+            智能基金理财顾问系统 | 生成时间: 2026-04-14 01:13
+        </div>
+    </div>
+</body>
+</html>
+        
