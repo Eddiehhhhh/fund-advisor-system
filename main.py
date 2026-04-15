@@ -330,21 +330,65 @@ def generate_comprehensive_report(config: dict,
             })
     
     # 生成HTML报告
-    html_report = generate_visual_report_v2(market_data, portfolio_analysis, opp_list, scores)
+    try:
+        html_report = generate_visual_report_v2(market_data, portfolio_analysis, opp_list, scores)
+        if not html_report:
+            raise ValueError("generate_visual_report_v2 返回了空内容")
+        print(f"✅ HTML报告生成成功，长度: {len(html_report)} 字符")
+    except Exception as e:
+        print(f"❌ 生成可视化报告失败: {e}")
+        import traceback
+        traceback.print_exc()
+        # 降级：返回纯文本报告
+        html_report = _generate_fallback_report(market_overview, scores)
     
     return html_report
+
+
+def _generate_fallback_report(market_overview: dict, scores: list) -> str:
+    """降级报告：当可视化生成失败时，返回简单HTML"""
+    from datetime import datetime
+    date_str = datetime.now().strftime('%Y年%m月%d日')
+    sh_index = market_overview.get('sh_index', 0)
+    sh_change = market_overview.get('sh_change', 0)
+    up_count = market_overview.get('up_count', 0)
+    down_count = market_overview.get('down_count', 0)
+    
+    rows = ""
+    for s in sorted(scores, key=lambda x: x.get('total_score', 0), reverse=True):
+        rows += f"<tr><td>{s.get('name','')}</td><td>{s.get('total_score',0):.1f}</td><td>{s.get('recommendation','')}</td></tr>"
+    
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>基金日报 {date_str}</title>
+<style>body{{font-family:sans-serif;max-width:600px;margin:20px auto;padding:0 15px}}
+h1{{color:#333}}table{{width:100%;border-collapse:collapse}}
+th,td{{padding:8px;border:1px solid #ddd;text-align:left}}th{{background:#f5f5f5}}</style>
+</head><body>
+<h1>📊 基金理财日报 {date_str}</h1>
+<h2>今日市场</h2>
+<p>上证指数：{sh_index:.2f}（{'+' if sh_change>=0 else ''}{sh_change:.2f}%）</p>
+<p>涨跌家数：{up_count}涨 / {down_count}跌</p>
+<h2>基金评分</h2>
+<table><tr><th>基金</th><th>评分</th><th>建议</th></tr>{rows}</table>
+<p style="color:#999;font-size:12px">本报告仅供参考，不构成投资建议。</p>
+</body></html>"""
 
 
 def send_report(config: dict, html_content: str):
     """发送HTML报告"""
     print("\n📤 发送可视化报告...")
     
+    if not html_content:
+        print("  ❌ 报告内容为空，跳过发送")
+        return False
+    
+    print(f"  报告大小: {len(html_content)} 字符")
     notifier = Notifier(config)
     
     # 发送HTML报告
-    results = notifier.send_email("基金理财日报", html_content)
+    results = notifier.send_email("📊 基金理财日报", html_content)
     
-    print(f"  {'✅' if results else '❌'} 邮件发送")
+    print(f"  {'✅ 邮件发送成功' if results else '❌ 邮件发送失败'}")
     
     return results
 
@@ -379,9 +423,6 @@ def run_comprehensive_analysis(config_path: str = "config.yaml",
         # 5. 发送报告
         send_report(config, report)
         
-        # 6. 打印报告
-        print("\n" + report)
-        
         print(f"\n{'='*60}")
         print("✅ 综合分析完成！")
         print(f"{'='*60}")
@@ -405,7 +446,9 @@ def run_daily_analysis(config_path: str = "config.yaml"):
         report = generate_comprehensive_report(config, scores, market_overview)
         send_report(config, report)
         
-        print("\n" + report)
+        print(f"\n{'='*60}")
+        print("✅ 每日分析完成！")
+        print(f"{'='*60}")
         
         return report
         
