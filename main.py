@@ -284,7 +284,7 @@ def generate_comprehensive_report(config: dict,
     print("\n📝 生成可视化报告...")
     
     # 导入可视化报告生成器
-    from visual_report_v2 import generate_visual_report_v2
+    from visual_report_v3 import generate_visual_report_v3
     
     # 准备市场数据
     market_data = {
@@ -331,9 +331,9 @@ def generate_comprehensive_report(config: dict,
     
     # 生成HTML报告
     try:
-        html_report = generate_visual_report_v2(market_data, portfolio_analysis, opp_list, scores)
+        html_report = generate_visual_report_v3(market_data, portfolio_analysis, opp_list, scores)
         if not html_report:
-            raise ValueError("generate_visual_report_v2 返回了空内容")
+            raise ValueError("generate_visual_report_v3 返回了空内容")
         print(f"✅ HTML报告生成成功，长度: {len(html_report)} 字符")
     except Exception as e:
         print(f"❌ 生成可视化报告失败: {e}")
