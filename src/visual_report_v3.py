@@ -312,6 +312,33 @@ class VisualReportGeneratorV3:
             color: #666;
             margin-bottom: 10px;
         }}
+        
+        /* 推荐理由列表 */
+        .reason-list {{
+            list-style: none;
+            padding: 0;
+            margin: 0 0 12px 0;
+        }}
+        .reason-item {{
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 13px;
+            line-height: 1.5;
+        }}
+        .reason-item:last-child {{
+            border-bottom: none;
+        }}
+        .reason-icon {{
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }}
+        .reason-text {{
+            color: #555;
+        }}
         .fund-metrics {{
             display: flex;
             gap: 20px;
@@ -707,9 +734,9 @@ class VisualReportGeneratorV3:
                 badge_class = 'badge-hold'
                 badge_text = '可持有'
             
-            # 推荐理由
+            # 生成详细推荐理由
             reasons = fund.get('reasons', [])
-            reason_text = reasons[0] if reasons else '综合评分较高'
+            reason_html = self._generate_fund_reasons_html(fund, reasons)
             
             html += f"""
             <div class="fund-item">
@@ -717,14 +744,16 @@ class VisualReportGeneratorV3:
                     <div class="fund-name">{name} ({code})</div>
                     <span class="fund-badge {badge_class}">{badge_text}</span>
                 </div>
-                <div class="fund-reason">{reason_text}</div>
+                <div class="fund-reason-list">
+                    {reason_html}
+                </div>
                 <div class="fund-metrics">
                     <div class="metric">
-                        <span class="metric-label">评分:</span>
+                        <span class="metric-label">综合评分:</span>
                         <span class="metric-value">{score:.0f}分</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">PE:</span>
+                        <span class="metric-label">市盈率:</span>
                         <span class="metric-value">{pe:.1f}</span>
                     </div>
                     <div class="metric">
@@ -735,6 +764,48 @@ class VisualReportGeneratorV3:
             </div>
             """
         
+        return html
+    
+    def _generate_fund_reasons_html(self, fund: Dict, reasons: List[str]) -> str:
+        """生成基金详细推荐理由HTML"""
+        html = '<ul class="reason-list">'
+        
+        # 1. 估值理由
+        pe_pct = fund.get('pe_percentile', 50)
+        if pe_pct < 20:
+            html += f'<li class="reason-item"><span class="reason-icon">💰</span><span class="reason-text">估值极低：PE分位仅{pe_pct:.0f}%，处于历史低位，性价比较高</span></li>'
+        elif pe_pct < 40:
+            html += f'<li class="reason-item"><span class="reason-icon">💰</span><span class="reason-text">估值偏低：PE分位{pe_pct:.0f}%，低于历史平均水平</span></li>'
+        elif pe_pct > 80:
+            html += f'<li class="reason-item"><span class="reason-icon">⚠️</span><span class="reason-text">估值偏高：PE分位{pe_pct:.0f}%，处于历史高位，注意风险</span></li>'
+        
+        # 2. 趋势理由
+        trend_score = fund.get('trend_score', 50)
+        if trend_score >= 70:
+            html += f'<li class="reason-item"><span class="reason-icon">📈</span><span class="reason-text">趋势向好：技术面评分{trend_score:.0f}分，处于上升通道</span></li>'
+        elif trend_score <= 30:
+            html += f'<li class="reason-item"><span class="reason-icon">📉</span><span class="reason-text">趋势偏弱：技术面评分{trend_score:.0f}分，短期承压</span></li>'
+        
+        # 3. 动量理由
+        momentum = fund.get('momentum_score', 50)
+        if momentum >= 70:
+            html += f'<li class="reason-item"><span class="reason-icon">🚀</span><span class="reason-text">动量强劲：近期表现活跃，资金关注度高</span></li>'
+        elif momentum <= 30:
+            html += f'<li class="reason-item"><span class="reason-icon">😴</span><span class="reason-text">动量不足：近期表现平淡，缺乏资金推动</span></li>'
+        
+        # 4. 波动率理由
+        volatility = fund.get('volatility_score', 50)
+        if volatility >= 70:
+            html += f'<li class="reason-item"><span class="reason-icon">⚡</span><span class="reason-text">波动较大：适合短线操作，注意控制风险</span></li>'
+        elif volatility <= 30:
+            html += f'<li class="reason-item"><span class="reason-icon">😌</span><span class="reason-text">波动较小：走势相对稳健，适合长期持有</span></li>'
+        
+        # 5. 添加原始reasons中的其他理由
+        for reason in reasons[:2]:  # 最多显示2条原始理由
+            if reason and len(reason) > 5:  # 过滤掉太短的
+                html += f'<li class="reason-item"><span class="reason-icon">💡</span><span class="reason-text">{reason}</span></li>'
+        
+        html += '</ul>'
         return html
     
     def _generate_holdings_html(self, holdings: List[Dict]) -> str:
