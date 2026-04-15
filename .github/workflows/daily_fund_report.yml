@@ -10,7 +10,7 @@ jbs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 开发数据
+    - name: 开叙数据
       uses: actions/checkout@v4
       
     - name: 肥料用量
