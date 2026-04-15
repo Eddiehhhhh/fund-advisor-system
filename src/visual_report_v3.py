@@ -465,6 +465,15 @@ class VisualReportGeneratorV3:
                     <div class="sub">恐贪指数 {market_data.get('fear_greed', 50)}</div>
                 </div>
             </div>
+            
+            <!-- 资金流向分析 -->
+            <div class="fund-flow-section" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #eee;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #2c3e50;">💰 资金流向</div>
+                <div class="fund-flow-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    {self._generate_fund_flow_html(market_data)}
+                </div>
+            </div>
+            
             <div class="market-insight">
                 {self._generate_market_commentary(market_data)}
             </div>
@@ -604,6 +613,9 @@ class VisualReportGeneratorV3:
         sh_change = market_data.get('sh_change', 0)
         up_ratio = market_data.get('up_ratio', 50)
         fear_greed = market_data.get('fear_greed', 50)
+        north_flow = market_data.get('north_money_flow', 0)
+        main_flow = market_data.get('main_money_flow', 0)
+        vol_ratio = market_data.get('volume_ratio', 1.0)
         
         commentary = ""
         
@@ -625,13 +637,42 @@ class VisualReportGeneratorV3:
         else:
             commentary += "涨跌家数相对均衡，结构性行情明显。"
         
+        # 资金流向解读
+        commentary += "<br><br><strong>💰 资金流向分析：</strong><br>"
+        
+        # 北向资金
+        if north_flow > 50:
+            commentary += "北向资金大幅净流入，外资看好A股市场，这是个积极信号。"
+        elif north_flow > 0:
+            commentary += "北向资金小幅净流入，外资态度偏谨慎乐观。"
+        elif north_flow > -50:
+            commentary += "北向资金小幅净流出，外资在观望。"
+        else:
+            commentary += "北向资金大幅净流出，外资在撤退，需要警惕。"
+        
+        # 主力资金
+        if main_flow > 100:
+            commentary += "主力资金也在大幅流入，机构资金进场明显。"
+        elif main_flow > 0:
+            commentary += "主力资金小幅流入，机构在逐步建仓。"
+        elif main_flow > -100:
+            commentary += "主力资金小幅流出，机构在调仓换股。"
+        else:
+            commentary += "主力资金大幅流出，机构在减仓。"
+        
+        # 成交量
+        if vol_ratio > 1.3:
+            commentary += "今天成交量明显放大，市场活跃度提升。"
+        elif vol_ratio < 0.7:
+            commentary += "今天成交量萎缩，市场观望情绪浓厚。"
+        
         # 情绪解读
         if fear_greed > 70:
-            commentary += "市场情绪偏贪婪，注意控制仓位。"
+            commentary += "<br><br>市场情绪偏贪婪，注意控制仓位，别追高。"
         elif fear_greed < 30:
-            commentary += "市场情绪偏恐惧，可能是布局机会。"
+            commentary += "<br><br>市场情绪偏恐惧，可能是布局机会，可以考虑逢低买入。"
         else:
-            commentary += "市场情绪中性，适合正常操作。"
+            commentary += "<br><br>市场情绪中性，适合正常操作。"
         
         return commentary
     
@@ -927,6 +968,85 @@ class VisualReportGeneratorV3:
                 </div>
             </div>
             """
+        
+        return html
+    
+    def _generate_fund_flow_html(self, market_data: Dict) -> str:
+        """生成资金流向HTML"""
+        html = ''
+        
+        # 北向资金
+        north_flow = market_data.get('north_money_flow', 0)
+        north_5d = market_data.get('north_money_5d', 0)
+        north_class = 'up' if north_flow >= 0 else 'down'
+        north_icon = '📈' if north_flow >= 0 else '📉'
+        north_text = '净流入' if north_flow >= 0 else '净流出'
+        
+        html += f"""
+        <div class="flow-item" style="padding: 12px; background: #f8f9fa; border-radius: 8px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">🌊 北向资金（今日）</div>
+            <div style="font-size: 16px; font-weight: 600;" class="{north_class}">
+                {north_icon} {abs(north_flow):.1f}亿
+            </div>
+            <div style="font-size: 11px; color: #999; margin-top: 2px;">
+                {north_text} · 5日累计: {'+' if north_5d >= 0 else ''}{north_5d:.1f}亿
+            </div>
+        </div>
+        """
+        
+        # 主力资金
+        main_flow = market_data.get('main_money_flow', 0)
+        main_5d = market_data.get('main_money_5d', 0)
+        main_class = 'up' if main_flow >= 0 else 'down'
+        main_icon = '📈' if main_flow >= 0 else '📉'
+        main_text = '净流入' if main_flow >= 0 else '净流出'
+        
+        html += f"""
+        <div class="flow-item" style="padding: 12px; background: #f8f9fa; border-radius: 8px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">🏦 主力资金（今日）</div>
+            <div style="font-size: 16px; font-weight: 600;" class="{main_class}">
+                {main_icon} {abs(main_flow):.1f}亿
+            </div>
+            <div style="font-size: 11px; color: #999; margin-top: 2px;">
+                {main_text} · 5日累计: {'+' if main_5d >= 0 else ''}{main_5d:.1f}亿
+            </div>
+        </div>
+        """
+        
+        # 融资余额
+        margin = market_data.get('margin_balance', 0)
+        margin_change = market_data.get('margin_change', 0)
+        margin_class = 'up' if margin_change >= 0 else 'down'
+        margin_icon = '📈' if margin_change >= 0 else '📉'
+        
+        html += f"""
+        <div class="flow-item" style="padding: 12px; background: #f8f9fa; border-radius: 8px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">💳 融资余额</div>
+            <div style="font-size: 16px; font-weight: 600; color: #2c3e50;">
+                {margin:.0f}亿
+            </div>
+            <div style="font-size: 11px; color: #999; margin-top: 2px;" class="{margin_class}">
+                {margin_icon} 较昨日{'+' if margin_change >= 0 else ''}{margin_change:.1f}亿
+            </div>
+        </div>
+        """
+        
+        # 成交量比
+        vol_ratio = market_data.get('volume_ratio', 1.0)
+        vol_status = '放量' if vol_ratio > 1.2 else '缩量' if vol_ratio < 0.8 else '平量'
+        vol_color = '#e74c3c' if vol_ratio > 1.2 else '#27ae60' if vol_ratio < 0.8 else '#95a5a6'
+        
+        html += f"""
+        <div class="flow-item" style="padding: 12px; background: #f8f9fa; border-radius: 8px;">
+            <div style="font-size: 12px; color: #888; margin-bottom: 4px;">📊 成交量比</div>
+            <div style="font-size: 16px; font-weight: 600; color: {vol_color};">
+                {vol_ratio:.2f}x
+            </div>
+            <div style="font-size: 11px; color: #999; margin-top: 2px;">
+                {vol_status} · 相对5日均量
+            </div>
+        </div>
+        """
         
         return html
 
