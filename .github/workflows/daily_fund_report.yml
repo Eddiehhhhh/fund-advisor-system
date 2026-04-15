@@ -29,4 +29,7 @@ jobs:
         DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         DEEPSEEK_BASE_URL: https://api.deepseek.com/v1
         EMAIL_AUTH_CODE: ${{ secrets.EMAIL_AUTH_CODE }}
-      run: python main.py
+      run: |
+        python -c "import sys; print('Python:', sys.version)"
+        python -c "import os; print('EMAIL_AUTH_CODE exists:', bool(os.getenv('EMAIL_AUTH_CODE')))"
+        python main.py
