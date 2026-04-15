@@ -313,6 +313,71 @@ class VisualReportGeneratorV3:
             margin-bottom: 10px;
         }}
         
+        /* 交易计划卡片 */
+        .trading-plan-card {{
+            background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%);
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+        }}
+        .plan-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #ffd54f;
+        }}
+        .plan-title {{
+            font-weight: 600;
+            font-size: 14px;
+            color: #f57c00;
+        }}
+        .position-tag {{
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }}
+        .plan-content {{
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }}
+        .plan-row {{
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 13px;
+        }}
+        .plan-label {{
+            color: #666;
+            white-space: nowrap;
+        }}
+        .plan-value {{
+            color: #333;
+            font-weight: 500;
+        }}
+        .plan-value.highlight {{
+            color: #e65100;
+            font-weight: 600;
+        }}
+        .event-row {{
+            background: #e3f2fd;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }}
+        .position-desc {{
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #ffd54f;
+            font-style: italic;
+        }}
+        
         /* 推荐理由列表 */
         .reason-list {{
             list-style: none;
@@ -749,7 +814,7 @@ class VisualReportGeneratorV3:
         return html
     
     def _generate_recommended_funds_html(self, fund_scores: List[Dict]) -> str:
-        """生成推荐基金HTML"""
+        """生成推荐基金HTML - 增强版，包含短期交易建议"""
         if not fund_scores:
             return '<div class="empty-state">暂无推荐</div>'
         
@@ -764,7 +829,9 @@ class VisualReportGeneratorV3:
             pe = fund.get('pe', 0)
             pe_pct = fund.get('pe_percentile', 50)
             
-            # 确定推荐标签
+            # 确定推荐标签和仓位建议
+            position_advice = self._generate_position_advice(fund)
+            
             if score >= 75:
                 badge_class = 'badge-buy'
                 badge_text = '推荐买入'
@@ -774,6 +841,9 @@ class VisualReportGeneratorV3:
             else:
                 badge_class = 'badge-hold'
                 badge_text = '可持有'
+            
+            # 生成交易计划
+            trading_plan = self._generate_trading_plan(fund)
             
             # 生成详细推荐理由
             reasons = fund.get('reasons', [])
@@ -785,6 +855,10 @@ class VisualReportGeneratorV3:
                     <div class="fund-name">{name} ({code})</div>
                     <span class="fund-badge {badge_class}">{badge_text}</span>
                 </div>
+                
+                <!-- 交易计划卡片 -->
+                {trading_plan}
+                
                 <div class="fund-reason-list">
                     {reason_html}
                 </div>
@@ -806,6 +880,155 @@ class VisualReportGeneratorV3:
             """
         
         return html
+    
+    def _generate_position_advice(self, fund: Dict) -> str:
+        """生成仓位建议"""
+        score = fund.get('total_score', 50)
+        pe_pct = fund.get('pe_percentile', 50)
+        
+        # 根据评分和估值给出仓位建议
+        if score >= 80 and pe_pct < 30:
+            return "建议仓位：15-20%（可重仓）"
+        elif score >= 70 and pe_pct < 40:
+            return "建议仓位：10-15%（可加仓）"
+        elif score >= 60 and pe_pct < 50:
+            return "建议仓位：5-10%（轻仓试探）"
+        elif score >= 50:
+            return "建议仓位：3-5%（观察仓）"
+        else:
+            return "建议仓位：暂不参与"
+    
+    def _generate_trading_plan(self, fund: Dict) -> str:
+        """生成交易计划卡片"""
+        name = fund.get('fund_name', '')
+        score = fund.get('total_score', 50)
+        pe_pct = fund.get('pe_percentile', 50)
+        current_price = fund.get('current_price', 0)
+        
+        # 判断位置高低
+        if pe_pct < 20:
+            position = "🔴 历史低位"
+            position_desc = "估值处于历史底部区域，安全边际高"
+        elif pe_pct < 40:
+            position = "🟡 相对低位"
+            position_desc = "估值低于历史平均水平，具备配置价值"
+        elif pe_pct > 80:
+            position = "⚠️ 历史高位"
+            position_desc = "估值处于历史高位，注意回调风险"
+        elif pe_pct > 60:
+            position = "🟠 相对高位"
+            position_desc = "估值高于历史平均水平，谨慎追高"
+        else:
+            position = "⚪ 合理区间"
+            position_desc = "估值处于历史中等水平"
+        
+        # 仓位建议
+        position_advice = self._generate_position_advice(fund)
+        
+        # 目标收益和持有周期
+        if score >= 75 and pe_pct < 40:
+            target_return = "15-25%"
+            hold_period = "1-3个月"
+            sell_trigger = "估值修复至PE分位50%以上或涨幅达20%"
+        elif score >= 65 and pe_pct < 50:
+            target_return = "10-18%"
+            hold_period = "2-4个月"
+            sell_trigger = "估值回归合理区间或涨幅达15%"
+        elif score >= 55:
+            target_return = "8-12%"
+            hold_period = "3-6个月"
+            sell_trigger = "达到目标收益或趋势转弱"
+        else:
+            target_return = "5-10%"
+            hold_period = "3-6个月"
+            sell_trigger = "达到目标收益或出现更好的机会"
+        
+        # 事件驱动分析
+        event_analysis = self._analyze_event_driver(fund)
+        
+        return f"""
+        <div class="trading-plan-card">
+            <div class="plan-header">
+                <span class="plan-title">📋 交易计划</span>
+                <span class="position-tag">{position}</span>
+            </div>
+            <div class="plan-content">
+                <div class="plan-row">
+                    <span class="plan-label">💰 仓位建议：</span>
+                    <span class="plan-value highlight">{position_advice}</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-label">🎯 目标收益：</span>
+                    <span class="plan-value">{target_return}</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-label">⏱️ 持有周期：</span>
+                    <span class="plan-value">{hold_period}</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-label">🚪 卖出条件：</span>
+                    <span class="plan-value">{sell_trigger}</span>
+                </div>
+                {event_analysis}
+            </div>
+            <div class="position-desc">{position_desc}</div>
+        </div>
+        """
+    
+    def _analyze_event_driver(self, fund: Dict) -> str:
+        """分析事件驱动因素"""
+        name = fund.get('fund_name', '')
+        pe_pct = fund.get('pe_percentile', 50)
+        trend_score = fund.get('trend_score', 50)
+        
+        events = []
+        
+        # 根据基金类型和估值判断可能的驱动事件
+        if '白酒' in name:
+            if pe_pct < 30:
+                events.append("消费复苏预期下，白酒板块估值修复机会")
+            elif pe_pct > 70:
+                events.append("旺季过后需求回落，注意短期回调风险")
+        elif '医药' in name or '医疗' in name:
+            if pe_pct < 30:
+                events.append("医药集采影响减弱，创新药政策边际改善")
+            events.append("人口老龄化长期支撑医药需求")
+        elif '新能源' in name:
+            if pe_pct < 35:
+                events.append("产业链价格触底，产能出清接近尾声")
+            events.append("政策持续支持新能源发展")
+        elif '半导体' in name or '芯片' in name:
+            if pe_pct < 35:
+                events.append("行业周期底部，国产替代逻辑持续")
+            events.append("AI算力需求带动半导体景气度回升")
+        elif '人工智能' in name or 'AI' in name:
+            events.append("AI应用落地加速，算力需求持续增长")
+        elif '恒生' in name or '港股' in name:
+            if pe_pct < 25:
+                events.append("港股估值处于历史极低水平，存在估值修复空间")
+            events.append("美联储降息预期利好港股流动性")
+        elif '纳斯达克' in name or '标普' in name:
+            events.append("美股科技股业绩韧性较强")
+        elif '银行' in name or '证券' in name:
+            events.append("高股息策略下金融板块配置价值凸显")
+        elif '军工' in name:
+            events.append("国防预算增长，订单落地预期增强")
+        
+        # 技术面事件
+        if trend_score >= 70:
+            events.append("技术形态突破，资金流入明显")
+        elif trend_score <= 30:
+            events.append("短期超卖，存在技术性反弹机会")
+        
+        if events:
+            event_text = "；".join(events[:2])  # 最多显示2个事件
+            return f'''
+                <div class="plan-row event-row">
+                    <span class="plan-label">📰 驱动因素：</span>
+                    <span class="plan-value">{event_text}</span>
+                </div>
+            '''
+        return ""
     
     def _generate_fund_reasons_html(self, fund: Dict, reasons: List[str]) -> str:
         """生成基金详细推荐理由HTML"""
