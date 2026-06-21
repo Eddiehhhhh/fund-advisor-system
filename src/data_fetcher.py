@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 import yaml
 
+from index_etf_map import get_etf_code, get_fund_code, get_index_info, get_index_name
+
 
 class FundDataFetcher:
     """基金数据获取器"""
@@ -35,30 +37,9 @@ class FundDataFetcher:
         Returns:
             DataFrame with columns: date, nav, acc_nav, change_pct
         """
-        # 指数代码 -> 主流ETF基金代码映射
-        index_to_etf = {
-            '000300': '110020',  # 沪深300 ETF (易方达)
-            '000905': '160119',  # 中证500 ETF (南方)
-            '399006': '110026',  # 创业板 ETF (易方达)
-            '000688': '011612',  # 科创50 ETF (华夏)
-            '000016': '110003',  # 上证50 ETF (易方达)
-            '000852': '159845',  # 中证1000 ETF (华夏)
-            '399997': '160632',  # 白酒 ETF (鹏华)
-            '399989': '162412',  # 医疗 ETF (华宝)
-            '399808': '164905',  # 新能源 ETF (华安)
-            'H30184': '008282',  # 半导体 ETF (国联安)
-            '399967': '502003',  # 军工 ETF (易方达)
-            '399986': '160631',  # 银行 ETF (鹏华)
-            '399975': '502010',  # 证券 ETF (易方达)
-            '931775': '160628',  # 地产 ETF (鹏华)
-            '930050': '008585',  # 人工智能 ETF (融通)
-            'H30233': '004752',  # 传媒 ETF (广发)
-            'NDX': '040046',     # 纳斯达克100 (华安)
-            'SPX': '050025',     # 标普500 (博时)
-            'HSI': '164705',     # 恒生指数 (汇添富)
-        }
-        
-        etf_code = index_to_etf.get(fund_code, fund_code)
+        # 使用 index_etf_map 获取对应的场外基金代码（历史净值 API 使用）
+        etf_info = get_index_info(fund_code)
+        etf_code = get_fund_code(fund_code) if etf_info else fund_code
         
         # 天天基金网API - 返回HTML表格，每页最多20条，需要多页获取
         from bs4 import BeautifulSoup
@@ -203,27 +184,8 @@ class FundDataFetcher:
         Returns:
             Dict with scale, management_fee, tracking_error, establish_year
         """
-        # 指数代码 -> 主流ETF代码映射
-        index_to_etf = {
-            '000300': '510300',  # 沪深300 ETF (华泰柏瑞)
-            '000905': '510500',  # 中证500 ETF (南方)
-            '399006': '159915',  # 创业板 ETF (易方达)
-            '000688': '588000',  # 科创50 ETF (华夏)
-            '000016': '510050',  # 上证50 ETF (华夏)
-            '000852': '512100',  # 中证1000 ETF (华夏)
-            '399997': '512690',  # 白酒 ETF (鹏华)
-            '399989': '512170',  # 医疗 ETF (华夏)
-            '399808': '516160',  # 新能源 ETF (华夏)
-            'H30184': '512480',  # 半导体 ETF (国泰)
-            '399967': '512660',  # 军工 ETF (国泰)
-            '399986': '512800',  # 银行 ETF (华宝)
-            '399975': '512880',  # 证券 ETF (国泰)
-            '931775': '512200',  # 地产 ETF (建信)
-            '930050': '515070',  # 人工智能 ETF (华宝)
-            'H30233': '512980',  # 传媒 ETF (易方达)
-        }
-        
-        etf_code = index_to_etf.get(fund_code)
+        # 使用 index_etf_map 获取场内 ETF 代码
+        etf_code = get_etf_code(fund_code)
         
         if etf_code:
             try:
@@ -458,27 +420,8 @@ class FundDataFetcher:
         Returns:
             ETF资金流向数据
         """
-        # 指数代码 -> 场内ETF代码映射
-        index_to_etf_code = {
-            '000300': '510300',  # 沪深300 ETF
-            '000905': '510500',  # 中证500 ETF
-            '399006': '159915',  # 创业板 ETF
-            '000688': '588000',  # 科创50 ETF
-            '000016': '510050',  # 上证50 ETF
-            '000852': '512100',  # 中证1000 ETF
-            '399997': '512690',  # 白酒 ETF
-            '399989': '512170',  # 医疗 ETF
-            '399808': '516160',  # 新能源 ETF
-            'H30184': '512480',  # 半导体 ETF
-            '399967': '512660',  # 军工 ETF
-            '399986': '512800',  # 银行 ETF
-            '399975': '512880',  # 证券 ETF
-            '931775': '512200',  # 地产 ETF
-            '930050': '515070',  # 人工智能 ETF
-            'H30233': '512980',  # 传媒 ETF
-        }
-        
-        etf_code = index_to_etf_code.get(fund_code)
+        # 使用 index_etf_map 获取场内 ETF 代码
+        etf_code = get_etf_code(fund_code)
         if not etf_code:
             return {'etf_code': None, 'inflow': 0, 'volume': 0, 'turnover': 0}
         
